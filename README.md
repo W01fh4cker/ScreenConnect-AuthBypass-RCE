@@ -1,6 +1,6 @@
 # How to use
 
-I'm using `Python3.9`.
+I'm using `Python3.9`
 
 ```
 pip install requests
@@ -95,4 +95,6 @@ app="ScreenConnect-Remote-Support-Software"
 
 https://www.connectwise.com/company/trust/security-bulletins/connectwise-screenconnect-23.9.8
 
-https://github.com/watchtowrlabs/connectwise-screenconnect_auth-bypass-add-user-poc
+https://github.com/watchtowrlabs/connectwise-screenconnect_auth-bypass-add-user-poc  
+
+https://github.com/rapid7/metasploit-framework/pull/18870
