@@ -38,7 +38,7 @@ python ScreenConnect-AuthBypass-RCE.py -t http://192.168.9.100
 
 # Bug?NO!
 
-If you encounter the following situation, it means that the goal cannot be achieved by RCE through this script.  
+When you encounter the following situation, it indicates that the site cannot be RCE through this script.  
 
 ![](https://github.com/W01fh4cker/ScreenConnect-AuthBypass-RCE/assets/101872898/422f1228-d913-4296-9eea-9e0685489ad9)
 
