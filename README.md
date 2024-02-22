@@ -13,18 +13,21 @@ python batchAdduser.py
 ```text
 python ScreenConnect-AuthBypass-RCE.py -h
 
-usage: ScreenConnect-AuthBypass-RCE.py [-h] [-u USERNAME] [-p PASSWORD] -t TARGET [-d DOMAIN]
-CVE-2024-1708 && CVE-2024-1709 --> RCE!!!
-optional arguments:                                                                          
-  -h, --help            show this help message and exit                                      
-  -u USERNAME, --username USERNAME                                                           
-                        username you want to add                                             
-  -p PASSWORD, --password PASSWORD                                                           
-                        password you want to add                                             
-  -t TARGET, --target TARGET                                                                 
-                        target url                                                           
-  -d DOMAIN, --domain DOMAIN                                                                 
+usage: ScreenConnect-AuthBypass-RCE.py [-h] [-u USERNAME] [-p PASSWORD] -t TARGET [-d DOMAIN] [--proxy PROXY]
+                                                                                                             
+CVE-2024-1708 && CVE-2024-1709 --> RCE!!!                                                                    
+                                                                                                             
+optional arguments:                                                                                          
+  -h, --help            show this help message and exit                                                      
+  -u USERNAME, --username USERNAME                                                                           
+                        username you want to add                                                             
+  -p PASSWORD, --password PASSWORD
+                        password you want to add
+  -t TARGET, --target TARGET
+                        target url
+  -d DOMAIN, --domain DOMAIN
                         Description of domain
+  --proxy PROXY         eg: http://127.0.0.1:8080
 ```
 For example:
 ```shell
