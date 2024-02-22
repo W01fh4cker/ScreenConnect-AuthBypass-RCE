@@ -36,6 +36,24 @@ python ScreenConnect-AuthBypass-RCE.py -t http://192.168.9.100
 
 ![](https://github.com/W01fh4cker/ScreenConnect-AuthBypass-POC-EXP/assets/101872898/c6d6a60e-433f-4f80-807d-dc7bc061cb96)
 
+# Bug?NO!
+
+If you encounter the following situation, it means that the goal cannot be achieved by RCE through this script.  
+
+![](https://github.com/W01fh4cker/ScreenConnect-AuthBypass-RCE/assets/101872898/422f1228-d913-4296-9eea-9e0685489ad9)
+
+The specific reasons can be found at:  
+
+> https://screenconnect.product.connectwise.com/communities/1/topics/1653-whitelist-custom-extensions-in-65
+>
+> https://bishopfox.com/blog/connectwise-control-advisory
+>
+> https://www.connectwise.com/globalassets/media/documents/connectwisecontrolsecurityevaluationmatrix.pdf
+
+![](https://github.com/W01fh4cker/ScreenConnect-AuthBypass-RCE/assets/101872898/379191d2-862f-4a02-876f-850a771c1ddf)
+
+If you can get a legal signature, please file issues, thank you very much.
+
 # Cyberspace mapping statement
 
 ## Odin
